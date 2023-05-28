@@ -154,3 +154,4 @@ cython_debug/
 test.*
 feed.txt
 *.bat
+*_feed.txt
