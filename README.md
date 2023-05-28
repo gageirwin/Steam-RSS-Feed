@@ -11,7 +11,7 @@ python steam_rss.py [OPTIONS] "YOUR DISCORD WEBHOOK URL"
 ```
 ## Options
  - `--appid` : Appid of the Steam game whose announcements you want to monitor.
- - `--group` : Name fo the steam group whose announcements you want to monitor. (Must be public.)
+ - `--group` : Name of the steam group whose announcements you want to monitor. (Must be public.)
  - `--indefinitely` : Indefinitely run the application and check the feed every hour.
 ## Note
 - On the initial run it will send (10) webhooks for all events in the feed.
