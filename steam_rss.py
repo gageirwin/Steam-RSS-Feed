@@ -13,8 +13,12 @@ def parse_arguments():
     parser.add_argument(
         "--appid",
         type=str,
-        required=True,
         help="Appid of the Steam game whose announcements you want to monitor.",
+    )
+    parser.add_argument(
+        "--group",
+        type=str,
+        help="Name fo the steam group whose announcements you want to monitor. (Must be public.)",
     )
     parser.add_argument(
         "--indefinitely",
@@ -22,7 +26,14 @@ def parse_arguments():
         help="Indefinitely run the application and check the feed every hour.",
     )
     parser.add_argument("webhook_url", type=str, help="Discord Webhook")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.appid and args.group:
+        print("Error: Only one of --appid or --group can be provided.")
+        quit()
+    if not args.appid and not args.group:
+        print("Error: One of --appid or --group must be provided.")
+        quit()
+    return args
 
 
 def main():
@@ -31,10 +42,19 @@ def main():
     steam_icon = "https://cdn.cloudflare.steamstatic.com/valvesoftware/images/about/steam_logo.png"
     webhook = SyncWebhook.from_url(args.webhook_url)
 
-    rss_url = f"https://steamcommunity.com/ogg/{args.appid}/rss/"
+    if args.appid:
+        rss_url = f"https://steamcommunity.com/ogg/{args.appid}/rss/"
+        feed_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), f"{args.appid}_feed.txt"
+        )
+    elif args.group:
+        rss_url = f"https://steamcommunity.com/groups/{args.group}/rss/"
+        feed_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), f"{args.group}_feed.txt"
+        )
+    else:
+        quit()
 
-    feed_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "feed.txt")
-    print(feed_file)
     while True:
         old_feed = []
         if os.path.exists(feed_file):
