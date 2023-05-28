@@ -5,7 +5,7 @@ from datetime import datetime
 from xml.etree import ElementTree
 
 import requests
-from discord import SyncWebhook
+from discord import Embed, SyncWebhook
 
 
 def parse_arguments():
@@ -28,10 +28,10 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    webhook_avatar_url = "https://cdn.cloudflare.steamstatic.com/valvesoftware/images/about/steam_logo.png"
+    steam_icon = "https://cdn.cloudflare.steamstatic.com/valvesoftware/images/about/steam_logo.png"
     webhook = SyncWebhook.from_url(args.webhook_url)
 
-    url = f"https://steamcommunity.com/ogg/{args.appid}/rss/"
+    rss_url = f"https://steamcommunity.com/ogg/{args.appid}/rss/"
 
     feed_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "feed.txt")
     print(feed_file)
@@ -41,7 +41,24 @@ def main():
             with open(feed_file, "r") as f:
                 old_feed = [line.strip() for line in f.readlines()]
 
-        response = requests.get(url)
+        response = requests.get(rss_url)
+
+        if not response.ok:
+            embed_dict = {
+                "author": {
+                    "name": "Steam RSS Feed",
+                    "url": rss_url,
+                    "icon_url": steam_icon,
+                },
+                "title": f"Error: {response.status_code} | {response.reason}",
+                "color": 0xFF0000,
+            }
+            webhook.send(
+                username="Steam RSS Feed",
+                avatar_url=steam_icon,
+                embed=Embed.from_dict(embed_dict),
+            )
+            quit()
 
         root = ElementTree.fromstring(response.text)
         channel = root.find("channel")
@@ -60,7 +77,7 @@ def main():
 
             webhook.send(
                 username=feed_title,
-                avatar_url=webhook_avatar_url,
+                avatar_url=steam_icon,
                 content=f"# {title}\n**Posted:** {date.strftime('%a, %b %d, %Y @ %I:%M %p %Z')}\n{link}",
             )
             with open(feed_file, "a+") as f:
