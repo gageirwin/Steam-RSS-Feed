@@ -33,10 +33,12 @@ def main():
 
     url = f"https://steamcommunity.com/ogg/{args.appid}/rss/"
 
+    feed_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "feed.txt")
+    print(feed_file)
     while True:
         old_feed = []
-        if os.path.exists("feed.txt"):
-            with open("feed.txt", "r") as f:
+        if os.path.exists(feed_file):
+            with open(feed_file, "r") as f:
                 old_feed = [line.strip() for line in f.readlines()]
 
         response = requests.get(url)
@@ -61,7 +63,7 @@ def main():
                 avatar_url=webhook_avatar_url,
                 content=f"# {title}\n**Posted:** {date.strftime('%a, %b %d, %Y @ %I:%M %p %Z')}\n{link}",
             )
-            with open("feed.txt", "a+") as f:
+            with open(feed_file, "a+") as f:
                 f.write(title + "\n")
 
         if args.indefinitely == False:
