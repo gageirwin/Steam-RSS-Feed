@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 Run application
 ```bash
-python steam_rss.py [OPTIONS] "YOUR DISCORD WEBHOOK URL"
+python steam_rss.py [OPTIONS] DISCORD_WEBHOOK_URL
 ```
 ## Options
  - `--appid` : Appid of the Steam game whose announcements you want to monitor.
