@@ -47,13 +47,11 @@ def main():
         feed_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), f"{args.appid}_feed.txt"
         )
-    elif args.group:
+    else:
         rss_url = f"https://steamcommunity.com/groups/{args.group}/rss/"
         feed_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), f"{args.group}_feed.txt"
         )
-    else:
-        quit()
 
     while True:
         old_feed = []
