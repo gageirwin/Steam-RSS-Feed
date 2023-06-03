@@ -33,6 +33,7 @@ def get_opengraph_meta_tags(url):
 def main():
     args = parse_arguments()
 
+    username = "Steam RSS Feed"
     steam_icon = "https://cdn.cloudflare.steamstatic.com/valvesoftware/images/about/steam_logo.png"
     webhook = SyncWebhook.from_url(args.webhook)
 
@@ -54,8 +55,7 @@ def main():
                 print(f"Error: {response.status_code} | {response.reason} Getting feed")
                 embed_dict = {
                     "author": {
-                        "name": "Steam RSS Feed",
-                        "url": feed_url,
+                        "name": username,
                         "icon_url": steam_icon,
                     },
                     "title": f"Error: {response.status_code} | {response.reason}",
@@ -63,7 +63,7 @@ def main():
                     "color": RED,
                 }
                 webhook.send(
-                    username="Steam RSS Feed",
+                    username=username,
                     avatar_url=steam_icon,
                     embed=Embed.from_dict(embed_dict),
                 )
@@ -117,7 +117,7 @@ def main():
 
                 if old_feed != [] or args.force_old:
                     webhook.send(
-                        username=feed_title,
+                        username=username,
                         avatar_url=steam_icon,
                         embed=Embed.from_dict(embed),
                     )
