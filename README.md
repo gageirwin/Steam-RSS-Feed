@@ -1,5 +1,5 @@
 # Steam RSS Feed
-Get notifications for steam games or steam groups RSS Feed with Discord Webhooks.
+Have the announcements feed for Steam games and groups sent over Discord webhooks.
 ## Usage
 Install requirements
 ```bash
