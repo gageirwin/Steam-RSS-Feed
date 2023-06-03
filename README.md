@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 Run application
 ```bash
-python steam_rss.py [OPTIONS] --webhook WEBHOOK
+python steam_rss.py [OPTIONS] --webhook "WEBHOOK"
 ```
 ## Options
  - `--webhook WEBHOOK` : Your Discord webhook. (Required)
@@ -17,6 +17,12 @@ python steam_rss.py [OPTIONS] --webhook WEBHOOK
  - `--interval 0d0h0m0s` : Specify the wait interval in days, hours, minutes, and seconds (e.g., 1d2h30m)
  - `--archive FILE` : Archive file to store previous feed(s) items. Default is `feed.txt` located in the current working directory (cwd).
  - `--force-old` Send webhook notifications when `--archive` file is empty.
+
+## Examples
+```bash
+python steam_rss.py --appid "593110" --group "SteamClientBeta" --continuous --interval "3h" --webhook "DISCORD_WEBHOOK_URL"
+```
+Continually check the announcements feed for [Steam News](https://steamcommunity.com/games/593110/announcements) (593110) and [Steam Client Beta](https://steamcommunity.com/groups/SteamClientBeta/announcements) (SteamClientBeta) every 3 hours.
 
 ## Notes
 - Using `--force-old` will send previous feed item notifications on **initial run**.
