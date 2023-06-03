@@ -89,7 +89,16 @@ def main():
                     item.find("pubDate").text, "%a, %d %b %Y %H:%M:%S %z"
                 ).astimezone()
 
-                description = html_to_markdown(item.find("description").text)
+                description, links = html_to_markdown(item.find("description").text)
+                print(links)
+
+                filed = {"name": "", "value": ""}
+                if links:
+                    filed = {
+                        "name": "Links:",
+                        "value": "\n".join(links),
+                        "inline": False,
+                    }
 
                 embed = {
                     "author": {
@@ -101,13 +110,7 @@ def main():
                     "url": guid,
                     "color": GREEN,
                     "description": description,
-                    "fields": [
-                        # {
-                        #     "name": "",
-                        #     "value": "",
-                        #     "inline": False,
-                        # },
-                    ],
+                    "fields": [filed],
                     "thumbnail": {"url": game_thumbnail},
                     "image": {"url": meta_tags.get("image", "")},
                     "timestamp": date.isoformat(),
@@ -120,6 +123,7 @@ def main():
                         embed=Embed.from_dict(embed),
                     )
 
+                continue
                 with open(args.archive, "a+") as f:
                     f.write(guid + "\n")
 
