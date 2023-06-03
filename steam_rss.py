@@ -34,7 +34,9 @@ def parse_time_interval(value):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Have the announcements feed for Steam games and groups sent over Discord webhooks."
+    )
     parser.add_argument(
         "--webhook", type=str, required=True, help="Your Discord webhook. (Required)"
     )
