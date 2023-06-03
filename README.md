@@ -18,7 +18,7 @@ python steam_rss.py [OPTIONS] --webhook "WEBHOOK"
  - `--archive FILE` : Archive file to store previous feed(s) items. Default is `feed.txt` located in the current working directory (cwd).
  - `--force-old` Send webhook notifications when `--archive` file is empty.
 
-## Notes
+### Notes
 - Using `--force-old` will send previous feed item notifications on **initial run**.
 
 ## Examples
@@ -40,6 +40,6 @@ Run command
 ```bash
 docker run -d --volume <VOLUME-SOURCE>:/feeds steam_rss_feed [OPTIONS] --webhook "WEBHOOK"
 ```
-## Notes
+### Notes
  -  `<VOLUME-SOURCE>` : The path `feed.txt` file will be saved in.
  -  If using `--archive` you need to have it start in `/feeds` to use the attached volume. 
