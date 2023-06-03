@@ -6,6 +6,7 @@ class HTMLToMarkdownParser(HTMLParser):
         super().__init__()
         self.markdown = ""
         self.links = []
+        self.links_without_text = []
 
     def handle_starttag(self, tag, attrs):
         if tag == "p":
@@ -29,9 +30,10 @@ class HTMLToMarkdownParser(HTMLParser):
         elif tag == "a":
             link = self.links.pop()
             if link["text"]:
-                self.markdown += f"[{link['text']}]({link['href']})"
+                self.markdown += f"[{link['text']}]({link['href']}) "
             else:
-                self.markdown += link["href"] + " "
+                self.markdown += " "
+                self.links_without_text.append(link["href"])
 
     def handle_data(self, data):
         if self.links:
@@ -43,4 +45,4 @@ class HTMLToMarkdownParser(HTMLParser):
 def html_to_markdown(html):
     parser = HTMLToMarkdownParser()
     parser.feed(html)
-    return parser.markdown
+    return parser.markdown, parser.links_without_text
