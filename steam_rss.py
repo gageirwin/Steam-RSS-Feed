@@ -1,83 +1,33 @@
-import argparse
 import os
-import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from xml.etree import ElementTree
 
 import requests
+from bs4 import BeautifulSoup
 from discord import Embed, SyncWebhook
 
+from args import parse_arguments
+from html_to_markdown import html_to_markdown
 
-def validate_archive(path):
-    if not os.path.exists(os.path.dirname(path)):
-        raise argparse.ArgumentTypeError(
-            f"Invalid path: Directory {os.path.dirname(path)} does not exist."
-        )
-    return path
+RED = 0xFF0000
+GREEN = 0x00FF00
 
 
-def parse_time_interval(value):
-    pattern = (
-        r"^((?P<days>\d+)d)?((?P<hours>\d+)h)?((?P<minutes>\d+)m)?((?P<seconds>\d+)s)?$"
-    )
-    match = re.match(pattern, value)
-    if not match:
-        raise argparse.ArgumentTypeError(
-            "Invalid time interval format. Please provide a valid interval (e.g., 1d2h30m)"
-        )
+def get_opengraph_meta_tags(url):
+    response = requests.get(url)
 
-    groups = match.groupdict()
-    time_dict = {key: int(value) for key, value in groups.items() if value is not None}
+    soup = BeautifulSoup(response.content, "html.parser")
+    og_meta_tags = soup.find_all("meta", property=lambda p: p and p.startswith("og:"))
 
-    return timedelta(**time_dict)
+    opengraph_data = {}
+    for tag in og_meta_tags:
+        property_name = tag.get("property", "").replace("og:", "")
+        content = tag.get("content", "")
+        if property_name and content:
+            opengraph_data[property_name] = content
 
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Have the announcements feed for Steam games and groups sent over Discord webhooks."
-    )
-    parser.add_argument(
-        "--webhook", type=str, required=True, help="Your Discord webhook. (Required)"
-    )
-    parser.add_argument(
-        "--appid",
-        type=str,
-        nargs="+",
-        help="Appid(s) of the Steam game whose announcements you want to monitor.",
-    )
-    parser.add_argument(
-        "--group",
-        type=str,
-        nargs="+",
-        help="Name(s) of the Steam group whose announcements you want to monitor.",
-    )
-    parser.add_argument(
-        "--continuous",
-        action="store_true",
-        help="Continually check feed(s) based on --interval value. The default --interval is 1 hour.",
-    )
-    parser.add_argument(
-        "--interval",
-        type=parse_time_interval,
-        metavar="0d0h0m0s",
-        help="Specify the wait interval in days, hours, minutes, and seconds (e.g., 1d2h30m)",
-        default=timedelta(hours=1),
-    )
-    parser.add_argument(
-        "--archive",
-        metavar="FILE",
-        type=validate_archive,
-        help="Archive file to store previous feed(s) items. Default is feeds.txt located in the current working directory (cwd).",
-        default=os.path.join(os.getcwd(), "feed.txt"),
-    )
-    parser.add_argument(
-        "--force-old",
-        action="store_true",
-        help="Send webhook notifications when --archive file is empty.",
-    )
-    args = parser.parse_args()
-    return args
+    return opengraph_data
 
 
 def main():
@@ -110,7 +60,7 @@ def main():
                     },
                     "title": f"Error: {response.status_code} | {response.reason}",
                     "description": f"{feed_url}",
-                    "color": 0xFF0000,
+                    "color": RED,
                 }
                 webhook.send(
                     username="Steam RSS Feed",
@@ -123,24 +73,53 @@ def main():
             channel = root.find("channel")
 
             feed_title = channel.find("title").text
+            feed_link = channel.find("link").text
+            game_thumbnail = ""
+            if channel.find("image") != None:
+                game_thumbnail = channel.find("image").find("url").text
 
             for item in reversed(list(channel.findall("item"))):
                 guid = item.find("guid").text
                 if guid in old_feed:
                     continue
 
-                title = item.find("title").text
-                link = item.find("link").text
+                meta_tags = get_opengraph_meta_tags(guid)
+
                 date = datetime.strptime(
                     item.find("pubDate").text, "%a, %d %b %Y %H:%M:%S %z"
                 ).astimezone()
+
+                description = html_to_markdown(item.find("description").text)
+
+                embed = {
+                    "author": {
+                        "name": feed_title,
+                        "url": f"{feed_link}/announcements",
+                        "icon_url": "",
+                    },
+                    "title": item.find("title").text,
+                    "url": guid,
+                    "color": GREEN,
+                    "description": description,
+                    "fields": [
+                        # {
+                        #     "name": "",
+                        #     "value": "",
+                        #     "inline": False,
+                        # },
+                    ],
+                    "thumbnail": {"url": game_thumbnail},
+                    "image": {"url": meta_tags.get("image", "")},
+                    "timestamp": date.isoformat(),
+                }
 
                 if old_feed != [] or args.force_old:
                     webhook.send(
                         username=feed_title,
                         avatar_url=steam_icon,
-                        content=f"# {title}\n**Posted:** {date.strftime('%a, %b %d, %Y @ %I:%M %p %Z')}\n{link}",
+                        embed=Embed.from_dict(embed),
                     )
+
                 with open(args.archive, "a+") as f:
                     f.write(guid + "\n")
 
