@@ -122,7 +122,6 @@ def main():
                         embed=Embed.from_dict(embed),
                     )
 
-                continue
                 with open(args.archive, "a+") as f:
                     f.write(guid + "\n")
 
