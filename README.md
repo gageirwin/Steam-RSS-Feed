@@ -1,6 +1,6 @@
 # Steam RSS Feed
 Have the announcements feed for Steam games and groups sent over Discord webhooks.
-## Usage
+# Usage
 Install requirements
 ```bash
 pip install -r requirements.txt
@@ -18,6 +18,9 @@ python steam_rss.py [OPTIONS] --webhook "WEBHOOK"
  - `--archive FILE` : Archive file to store previous feed(s) items. Default is `feed.txt` located in the current working directory (cwd).
  - `--force-old` Send webhook notifications when `--archive` file is empty.
 
+## Notes
+- Using `--force-old` will send previous feed item notifications on **initial run**.
+
 ## Examples
 ```bash
 python steam_rss.py --appid "593110" --group "SteamClientBeta" --continuous --interval "3h" --webhook "DISCORD_WEBHOOK_URL"
@@ -28,5 +31,15 @@ python steam_rss.py --appid "730" "570"--continuous --interval "1d" --webhook "D
 ```
 Continually check the announcements feed for [Counter-Strike: Global Offensive](https://steamcommunity.com/games/CSGO/announcements) (730) and [Dota 2](https://steamcommunity.com/games/dota2/announcements) (570) every 1 day.
 
+# Docker
+Build command
+```bash
+docker build -t steam_rss_feed .
+```
+Run command
+```bash
+docker run -d --volume <VOLUME-SOURCE>:/feeds steam_rss_feed [OPTIONS] --webhook "WEBHOOK"
+```
 ## Notes
-- Using `--force-old` will send previous feed item notifications on **initial run**.
+ -  `<VOLUME-SOURCE>` : The path `feed.txt` file will be saved in.
+ -  If using `--archive` you need to have it start in `/feeds` to use the attached volume. 
