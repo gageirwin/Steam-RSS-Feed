@@ -90,7 +90,6 @@ def main():
                 ).astimezone()
 
                 description, links = html_to_markdown(item.find("description").text)
-                print(links)
 
                 filed = {"name": "", "value": ""}
                 if links:
