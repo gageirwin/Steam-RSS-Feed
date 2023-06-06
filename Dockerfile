@@ -1,7 +1,10 @@
 FROM python:slim
 
 RUN mkdir /app
-COPY / /app
+COPY README.md /app
+COPY args.py /app
+COPY steam_rss.py /app
+COPY requirements.txt /app
 
 RUN mkdir /feeds
 VOLUME /feeds
