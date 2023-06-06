@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from discord import Embed, SyncWebhook
 
 from args import parse_arguments
-from html_to_markdown import html_to_markdown
 
 RED = 0xFF0000
 GREEN = 0x00FF00
@@ -80,7 +79,8 @@ def main():
 
             for item in reversed(list(channel.findall("item"))):
                 guid = item.find("guid").text
-                if guid in old_feed:
+                author = item.find("author")
+                if author == None or guid in old_feed:
                     continue
 
                 meta_tags = get_opengraph_meta_tags(guid)
@@ -88,16 +88,6 @@ def main():
                 date = datetime.strptime(
                     item.find("pubDate").text, "%a, %d %b %Y %H:%M:%S %z"
                 ).astimezone()
-
-                description, links = html_to_markdown(item.find("description").text)
-
-                filed = {"name": "", "value": ""}
-                if links:
-                    filed = {
-                        "name": "Links:",
-                        "value": "\n".join(links),
-                        "inline": False,
-                    }
 
                 embed = {
                     "author": {
@@ -108,8 +98,7 @@ def main():
                     "title": item.find("title").text,
                     "url": guid,
                     "color": GREEN,
-                    "description": description,
-                    "fields": [filed],
+                    "description": meta_tags.get("description", ""),
                     "thumbnail": {"url": game_thumbnail},
                     "image": {"url": meta_tags.get("image", "")},
                     "timestamp": date.isoformat(),
