@@ -123,7 +123,7 @@ def main():
                         with open(args.archive, "a+") as f:
                             f.write(guid + "\n")
                     continue
-                except requests.exceptions.ReadTimeout as e:
+                except requests.exceptions.RequestException as e:
                     retries += 1
                     if retries > max_retries:
                         print("All retires failed.")
@@ -132,8 +132,9 @@ def main():
                                 "name": username,
                                 "icon_url": steam_icon,
                             },
-                            "title": "Error: requests.exceptions.ReadTimeout",
-                            "description": f"All retries failed.\n{feed_url} has been skipped.",
+                            "title": "Error: An Exception Occurred",
+                            "description": f"All retries failed. {feed_url} has been skipped.",
+                            "fields": [{"name": "Exception", "value": e}],
                             "color": RED,
                         }
                         webhook.send(
