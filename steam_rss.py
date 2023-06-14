@@ -123,25 +123,10 @@ def main():
                         with open(args.archive, "a+") as f:
                             f.write(guid + "\n")
                     continue
-                except requests.exceptions.RequestException as e:
+                except Exception as e:
                     retries += 1
                     if retries > max_retries:
                         print("All retires failed.")
-                        embed_dict = {
-                            "author": {
-                                "name": username,
-                                "icon_url": steam_icon,
-                            },
-                            "title": "Error: An Exception Occurred",
-                            "description": f"All retries failed. {feed_url} has been skipped.",
-                            "fields": [{"name": "Exception", "value": e}],
-                            "color": RED,
-                        }
-                        webhook.send(
-                            username=username,
-                            avatar_url=steam_icon,
-                            embed=Embed.from_dict(embed_dict),
-                        )
                         break
                     print("Error occurred:", e)
                     print(
