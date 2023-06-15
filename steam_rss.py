@@ -10,7 +10,6 @@ from discord import Embed, SyncWebhook
 
 from args import parse_arguments
 
-RED = 0xFF0000
 GREEN = 0x00FF00
 
 
@@ -59,61 +58,45 @@ def main():
 
                     if not response.ok:
                         print(
-                            f"Error: {response.status_code} | {response.reason} Getting feed"
-                        )
-                        embed_dict = {
-                            "author": {
-                                "name": username,
-                                "icon_url": steam_icon,
-                            },
-                            "title": f"Error: {response.status_code} | {response.reason}",
-                            "description": f"{feed_url}",
-                            "color": RED,
-                        }
-                        webhook.send(
-                            username=username,
-                            avatar_url=steam_icon,
-                            embed=Embed.from_dict(embed_dict),
+                            f"Error: {response.status_code} | {response.reason} Getting feed."
                         )
                         break
 
                     root = ElementTree.fromstring(response.text)
                     channel = root.find("channel")
 
-                    feed_title = channel.find("title").text
-                    feed_link = channel.find("link").text
-                    game_thumbnail = ""
-                    if channel.find("image") != None:
-                        game_thumbnail = channel.find("image").find("url").text
-
                     for item in reversed(list(channel.findall("item"))):
                         guid = item.find("guid").text
-                        author = item.find("author")
-                        if author == None or guid in old_feed:
+                        if item.find("author") == None or guid in old_feed:
                             continue
 
-                        meta_tags = get_opengraph_meta_tags(guid)
-
-                        date = datetime.strptime(
-                            item.find("pubDate").text, "%a, %d %b %Y %H:%M:%S %z"
-                        ).astimezone()
-
-                        embed = {
-                            "author": {
-                                "name": feed_title,
-                                "url": f"{feed_link}/announcements",
-                                "icon_url": "",
-                            },
-                            "title": item.find("title").text,
-                            "url": guid,
-                            "color": GREEN,
-                            "description": meta_tags.get("description", ""),
-                            "thumbnail": {"url": game_thumbnail},
-                            "image": {"url": meta_tags.get("image", "")},
-                            "timestamp": date.isoformat(),
-                        }
-
                         if old_feed != [] or args.force_old:
+                            meta_tags = get_opengraph_meta_tags(guid)
+
+                            embed = {
+                                "author": {
+                                    "name": channel.find("title").text,
+                                    "url": f"{channel.find('link').text}/announcements",
+                                    "icon_url": "",  # how to get game icon?
+                                },
+                                "title": item.find("title").text,
+                                "url": guid,
+                                "color": GREEN,
+                                "description": meta_tags.get("description", ""),
+                                "thumbnail": {
+                                    "url": channel.find("image").find("url").text
+                                    if channel.find("image") != None
+                                    else ""
+                                },
+                                "image": {"url": meta_tags.get("image", "")},
+                                "timestamp": datetime.strptime(
+                                    item.find("pubDate").text,
+                                    "%a, %d %b %Y %H:%M:%S %z",
+                                )
+                                .astimezone()
+                                .isoformat(),
+                            }
+
                             webhook.send(
                                 username=username,
                                 avatar_url=steam_icon,
@@ -126,9 +109,9 @@ def main():
                 except Exception as e:
                     retries += 1
                     if retries > max_retries:
-                        print("All retires failed.")
+                        print("Error: All retires failed.")
                         break
-                    print("Error occurred:", e)
+                    print("Error:", e)
                     print(
                         f"Retrying in {wait_time*retries} seconds. ({retries}/{max_retries})"
                     )
