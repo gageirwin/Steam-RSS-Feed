@@ -75,7 +75,7 @@ def main():
                             avatar_url=steam_icon,
                             embed=Embed.from_dict(embed_dict),
                         )
-                        continue
+                        break
 
                     root = ElementTree.fromstring(response.text)
                     channel = root.find("channel")
@@ -122,7 +122,7 @@ def main():
 
                         with open(args.archive, "a+") as f:
                             f.write(guid + "\n")
-                    continue
+                    break
                 except Exception as e:
                     retries += 1
                     if retries > max_retries:
